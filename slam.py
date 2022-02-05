@@ -3,8 +3,8 @@ import torch
 import cv2
 import os
 import csv
-from imap_all_model import camera,imap_model
 from slam_utils import sampling,rays,render_volume,render_pixel_rays,render
+from model import imap_model,camera
 
 
 class imap_slam():
@@ -37,17 +37,17 @@ class imap_slam():
         # print("Camera ids:",camera_ids)
         ####
         for camera_id in camera_ids:
-            print(self.cameras[camera_id])
+            # print(self.cameras[camera_id])
             self.optimizer.zero_grad()
             self.cameras[camera_id].optimizer.zero_grad()
             self.cameras[camera_id].update_transform()
-            print("pose matrix:",self.cameras[camera_id].R) # could rotation matrix be used as a pose matrix ???
-            print("translation matrix:",self.cameras[camera_id].T)# translation matrix
+            # print("pose matrix:",self.cameras[camera_id].R) # could rotation matrix be used as a pose matrix ???
+            # print("translation matrix:",self.cameras[camera_id].T)# translation matrix
 
             height=self.cameras[camera_id].size[0]
             width=self.cameras[camera_id].size[1]
-            print("Image height:",height)
-            print("Image width:",width)
+            # print("Image height:",height)
+            # print("Image width:",width)
 
             if active_sampling:
                 with torch.no_grad():
@@ -71,8 +71,8 @@ class imap_slam():
                     
             else:
                 #take all pixels
-                us=((torch.rand(ni)*(width-1))).to(torch.int16).cuda()
-                vs=((torch.rand(ni)*(height-1))).to(torch.int16).cuda()
+                us=((torch.rand(batch_size)*(width-1))).to(torch.int16).cuda()
+                vs=((torch.rand(batch_size)*(height-1))).to(torch.int16).cuda()
             depth,rgb,depth_variance=render_pixel_rays(us,vs,self.cameras[camera_id],self.model,self.tracking_model,nc=32,nf=12,track=False)
             rgb_gt=torch.cat([self.cameras[camera_id].rgb_images[v,u,:].unsqueeze(0) for u,v in zip(us,vs)])
             depth_gt=torch.cat([self.cameras[camera_id].depth_images[v,u].unsqueeze(0) for u,v in zip(us,vs)])
@@ -85,7 +85,7 @@ class imap_slam():
             p_loss=torch.mean(torch.abs(rgb-rgb_gt))
 
             total_loss=(g_loss)+(5*p_loss)
-            print(total_loss)
+            # print(total_loss)
             total_loss.backward()
             self.optimizer.step()
             #look into the folowing snippet
@@ -128,5 +128,5 @@ class imap_slam():
             p=float(torch.sum(((torch.abs(depth-depth_gt)*torch.reciprocal(depth_gt+1e-12))<0.1).int()).cpu().item()) /batch_size
             if p>0.80:
                 break
-            print ("Tracking :" ,p)
-            return (p)
+        print ("Tracking :",p)
+        return (p)

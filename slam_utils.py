@@ -159,6 +159,7 @@ def render_pixel_rays(u,v,camera,imap_model,tracking_model,nc,nf,track=False):
     # print(d_image.shape)
     # print(c_image.shape)
     # print(d_var.shape)
+    c_image=camera.exp_a*c_image+camera.params[7]
     return (d_image,c_image,d_var)
 
 
