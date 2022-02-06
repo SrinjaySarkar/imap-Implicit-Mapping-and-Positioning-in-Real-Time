@@ -22,6 +22,8 @@ Notes I referred to while implementation.
 
 ### Results
 I used a much smaller than the original Nerf Model used in the paper (exactly half the number of parameter) hence the results are not as good as in the paper.Please downlaod the "teddy.mp4" for the original video.
+
+
 <img src="https://user-images.githubusercontent.com/25768975/152690630-c315e0e9-247b-4136-bd30-af655d3e8c29.gif" width="250" height="250"/>
 <!---
 ![Frieburg Teddy](https://user-images.githubusercontent.com/25768975/152690630-c315e0e9-247b-4136-bd30-af655d3e8c29.gif,width="250" height="250")
