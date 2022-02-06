@@ -21,4 +21,4 @@ Notes I referred to while implementation.
 - [iMAP](https://dramatic-durian-120.notion.site/iLabel-iMAP-50087dace65d45269fa54e4515bd3ebe)
 
 ### Results
-![Frieburg Teddy](https://user-images.githubusercontent.com/25768975/152690630-c315e0e9-247b-4136-bd30-af655d3e8c29.gif)
+![Frieburg Teddy](https://user-images.githubusercontent.com/25768975/152690630-c315e0e9-247b-4136-bd30-af655d3e8c29.gif,width="250" height="250")
