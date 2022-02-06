@@ -21,4 +21,4 @@ Notes I referred to while implementation.
 - [iMAP](https://dramatic-durian-120.notion.site/iLabel-iMAP-50087dace65d45269fa54e4515bd3ebe)
 
 ### Results
-![](./teddy.mp4)
+![teddy]( https://github.com/SrinjaySarkar/imap-Implicit-Mapping-and-Positioning-in-Real-Time/teddy.mp4)
