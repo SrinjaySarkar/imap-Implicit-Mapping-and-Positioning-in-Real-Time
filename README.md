@@ -21,7 +21,6 @@ Notes I referred to while implementation.
 - [iMAP](https://dramatic-durian-120.notion.site/iLabel-iMAP-50087dace65d45269fa54e4515bd3ebe)
 
 ### Results
-![Frieurg Teddy](imap-Implicit-Mapping-and-Positioning-in-Real-Time/teddy.mp4)
 
 <video width="320" height="240" controls>
   <source src="./teddy.mp4" type="video/mp4">
