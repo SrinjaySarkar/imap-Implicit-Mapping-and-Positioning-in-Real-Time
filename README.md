@@ -23,3 +23,6 @@ Notes I referred to while implementation.
 ### Results
 ![Frieurg Teddy](imap-Implicit-Mapping-and-Positioning-in-Real-Time/teddy.mp4)
 
+<video width="320" height="240" controls>
+  <source src="./teddy.mp4" type="video/mp4">
+</video>
