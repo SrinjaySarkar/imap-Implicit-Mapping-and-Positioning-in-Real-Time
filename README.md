@@ -24,7 +24,7 @@ Notes I referred to while implementation.
 <!-- blank line -->
 <figure class="video_container">
   <video controls="true" allowfullscreen="true">
-    <source src="./teddy.avi" type="video/mp4">
+    <source src="./teddy.avi" type="video/avi">
   </video>
 </figure>
 <!-- blank line -->
