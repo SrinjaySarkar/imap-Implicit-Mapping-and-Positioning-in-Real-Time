@@ -21,5 +21,11 @@ Notes I referred to while implementation.
 - [iMAP](https://dramatic-durian-120.notion.site/iLabel-iMAP-50087dace65d45269fa54e4515bd3ebe)
 
 ### Results
-(./teddy.avi "Reconstructed Bag")
+<!-- blank line -->
+<figure class="video_container">
+  <video controls="true" allowfullscreen="true">
+    <source src="./teddy.avi" type="video/mp4">
+  </video>
+</figure>
+<!-- blank line -->
 
