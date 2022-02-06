@@ -1,16 +1,16 @@
 import torch
 import sys
 import glob
-import os 
+import os
 import csv
 import time
-import cv2, threading 
+import cv2, threading
 from slam import imap_slam
 from model import camera
 from slam_utils import render
+#for changin image size make changes below and in slam.py in add_camera function
 
-
-data_path="/vinai/sskar/iMAP/rgbd_dataset_freiburg1_teddy/"
+data_path="/content/rgbd_dataset_freiburg1_desk/"
 def read_files(root_path):
     rgb_files,depth_files=[],[]
     rgb_csv_file=open(root_path+"rgb.txt","r")
@@ -19,14 +19,14 @@ def read_files(root_path):
         next(f)
     for row in f:
         rgb_files.append(os.path.join(root_path,row[1]))
-    
+
     depth_csv_file=open(root_path+"depth.txt","r")
     f=csv.reader(depth_csv_file,delimiter=" ")
     for _ in range(3):
         next(f)
     for row in f:
         depth_files.append(os.path.join(root_path,row[1]))
-    
+
     return (rgb_files,depth_files)
 
 def mappingThread(mapper):
@@ -42,18 +42,23 @@ def main():
     frame_length=min(len(rgb_files),len(depth_files))
     #init
     mapper.add_camera(rgb_files[0],depth_files[0],0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0)
+    rgb_image=cv2.imread(rgb_files[0],cv2.IMREAD_COLOR)
+    # rgb_image=cv2.resize(rgb_image,(32,32),interpolation=cv2.INTER_LINEAR)
+    depth_image=cv2.imread(depth_files[0],cv2.IMREAD_ANYDEPTH)
+    # depth_image=cv2.resize(depth_image,(32,32),interpolation=cv2.INTER_LINEAR)
+
     fixed_camera=camera(cv2.imread(rgb_files[0],cv2.IMREAD_COLOR),cv2.imread(depth_files[0],cv2.IMREAD_ANYDEPTH),0.0,0.0,0.0,1e-8,1e-8,1e-8,0.0,0.0)
     tracking_camera=camera(cv2.imread(rgb_files[0],cv2.IMREAD_COLOR),cv2.imread(depth_files[0],cv2.IMREAD_ANYDEPTH),0.0,0.0,0.0,1e-8,1e-8,1e-8,0.0,0.0)
 
     #200 pixels
-    for i in range(200):
+    for i in range(400):
         mapper.map(batch_size=200,active_sampling=False)
     # last_pose=
 
     #camera pose
     idx=0
     last_pose=tracking_camera.params
-    camera_vel=torch.tensor([0.0,0.0,0.0,0.0,0.0,0.0, 0.0, 0.0]).detach().cuda().requires_grad_(True)
+    camera_vel=torch.tensor([0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]).detach().cuda().requires_grad_(True)
     last_kf=0
     mapping_thread=threading.Thread(target=mappingThread,args=(mapper,))
     mapping_thread.start()
@@ -70,8 +75,9 @@ def main():
             print("Last pose:", last_pose)
             last_kf=frame
             print(tracking_camera.params)
-        # render(tracking_camera,"view",mapper.model,mapper.tracking_model,idx)
+        # torch.cuda.empty_cache()
+        render(tracking_camera,"view",mapper.model,mapper.tracking_model,frame)
     mapping_thread.join()
-        
+
 
 main()

@@ -9,15 +9,15 @@ import copy
 class imap_model(torch.nn.Module):
     def __init__(self):
         super(imap_model,self).__init__()
-        self.pos_enc=torch.nn.Linear(3,93,bias=False).cuda()
+        self.pos_enc=torch.nn.Linear(3,50,bias=False).cuda()
         torch.nn.init.normal_(self.pos_enc.weight,0.0,25.0)
-        self.fc1=torch.nn.Linear(93,256).cuda()
-        self.fc2=torch.nn.Linear(256,256).cuda()
-        self.fc3=torch.nn.Linear(256+93,256).cuda()
-        self.fc4=torch.nn.Linear(256,256).cuda()
-        self.fc5=torch.nn.Linear(256,4,bias=False).cuda()
+        self.fc1=torch.nn.Linear(50,128).cuda()
+        self.fc2=torch.nn.Linear(128,128).cuda()
+        self.fc3=torch.nn.Linear(128+50,128).cuda()
+        self.fc4=torch.nn.Linear(128,128).cuda()
+        self.fc5=torch.nn.Linear(128,4,bias=False).cuda()
         self.fc5.weight.data[3,:]*=0.1
-    
+
     def forward(self,p):
         gamma=torch.sin(self.pos_enc(p))
         # print("g:",gamma.shape)
@@ -51,13 +51,13 @@ class camera():
         self.R=torch.zeros(3,3).cuda()
         self.T=torch.zeros(3,3).cuda()
         self.Li=torch.cuda.FloatTensor(64).fill_(1.0/64)
-        ## normalized loss on the pixels common in both the 8*8 patch and the sampled set ; see equation 7 in papre 
+        ## normalized loss on the pixels common in both the 8*8 patch and the sampled set ; see equation 7 in papre
         self.size=depth.shape
 
-        #calculating the pose matrix of the camera 
+        #calculating the pose matrix of the camera
         self.update_transform()
         self.optimizer=torch.optim.Adam([self.params],lr=0.005)
-    
+
     def set_images(self,rgb,depth):
         self.rgb_images=torch.from_numpy((rgb).astype(np.float32)).cuda()
         self.rgb_images/=256 #normalize
@@ -65,7 +65,7 @@ class camera():
         self.depth_images/=50000 #depth to 16 bit color
 
     # Calc Transform from camera parameters
-    def update_transform(self): # do this better , doesn't make sense now but works 
+    def update_transform(self): # do this better , doesn't make sense now but works
         i = torch.cuda.FloatTensor(3,3).fill_(0)
         i[0,0] = 1
         i[1,1] = 1
@@ -80,7 +80,7 @@ class camera():
         w3[0, 1] = -1
         w3[1, 0] = 1
 
-        #getting the pose matrix because self.R is th pose matrix check this logic and other logic if they have the same output   
+        #getting the pose matrix because self.R is th pose matrix check this logic and other logic if they have the same output
         th = torch.norm(self.params[0:3])
         thi = 1.0/(th+1e-12)
         n = thi * self.params[0:3]
@@ -88,7 +88,7 @@ class camera():
         s = torch.sin(th)
         w = n[0]*w1 + n[1]*w2 + n[2]*w3
         ww = torch.matmul(w,w)
-        R1 = i + s * w 
+        R1 = i + s * w
         self.R = R1 + (1.0-c)*ww
         self.T = self.params[3:6]
         self.exp_a = torch.exp(self.params[6])

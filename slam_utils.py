@@ -21,7 +21,7 @@ def sampling(bins,weights,nf): # try naive hierarchical sampling
     # print(cdf.shape)
     cdf=torch.cat([torch.zeros_like(cdf[...,:-1]),cdf],-1)
     #inverse transform sampling
-    u=torch.rand(list(cdf.shape[:-1])+[nf]).cuda()#unformly sampled 
+    u=torch.rand(list(cdf.shape[:-1])+[nf]).cuda()#unformly sampled
     # print(u.shape)
     u=u.contiguous()
     idxs=torch.searchsorted(cdf,u,right=True)
@@ -32,7 +32,7 @@ def sampling(bins,weights,nf): # try naive hierarchical sampling
     matched_shape=[idxs_g.shape[0],idxs_g.shape[1],cdf.shape[-1]]
     cdf_g=torch.gather(cdf.unsqueeze(1).expand(matched_shape),2,idxs_g)
     bins_g=torch.gather(cdf.unsqueeze(1).expand(matched_shape),2,idxs_g)
-    
+
     denom=(cdf_g[...,1]-cdf_g[...,0])
     denom=torch.where(denom<1e-5,torch.ones_like(denom),denom)
     t=(u-cdf_g[...,0])/denom
@@ -78,13 +78,13 @@ def render_volume(points,model_op):
     #     p.append(points[:,i+1]-points[:,i])
     # print(len(p))
 
-    dists=points[:,1:]-points[:,:-1]#distance between consecutive points since the fine points are not sampled uniformly 
-    #hence different distance between two pairs of points 
+    dists=points[:,1:]-points[:,:-1]#distance between consecutive points since the fine points are not sampled uniformly
+    #hence different distance between two pairs of points
     # o=1-torch.exp(-coarse_model_op[:,:,3]*delta)
     # # print(o.shape)
     # o=o[:,1:]
     # # print(o.shape)
-    # t=1-torch.exp(-torch.cumsum(coarse_model_op[:,:,3]*delta,1))[:,:-1]#sub value of o in equation; and (j=1 to i-1) so remove last one. 
+    # t=1-torch.exp(-torch.cumsum(coarse_model_op[:,:,3]*delta,1))[:,:-1]#sub value of o in equation; and (j=1 to i-1) so remove last one.
     # """try this also: t=torch.exp(-torch.cumsum(model_op[:,:,3]*delta,1))[:,:-1] """
     # # print(t.shape)
     # w=o*t
@@ -99,8 +99,8 @@ def render_volume(points,model_op):
     i_cap=ws.unsqueeze(2).expand(points.shape[0],-1,3)*model_op[:,:-1,:3]
     i=torch.sum(i_cap,dim=1)
     d_var=torch.sum(ws*torch.square(points[:,:-1]-d.reshape(points.shape[0],1).expand(points.shape[0],step-1)),dim=1)#check this again?
-    return (d,i,d_var) 
-   
+    return (d,i,d_var)
+
 
 def render_pixel_rays(u,v,camera,imap_model,tracking_model,nc,nf,track=False):
     if track:
@@ -116,10 +116,10 @@ def render_pixel_rays(u,v,camera,imap_model,tracking_model,nc,nf,track=False):
         coarse_points=torch.linspace(0.0001,1.2,nc).cuda().reshape(1,nc).expand(u.shape[0],nc)#sample points on ray and then repeat for all pixels.
         cp1=coarse_points
         # print(coarse_points.shape)
-        #p=o+r*di ; p: set of points on the ray through the pixel ; o : ray origin all have same origin since all pixels belong to same image;  
-        #r is the ray direction which is different for every pixel; d is the distance between the sampled points since we have the points directly we multiply them 
+        #p=o+r*di ; p: set of points on the ray through the pixel ; o : ray origin all have same origin since all pixels belong to same image;
+        #r is the ray direction which is different for every pixel; d is the distance between the sampled points since we have the points directly we multiply them
         rays1=ray_origin.unsqueeze(1).expand(u.shape[0],nc,3) #+ ray_dir*points
-        # print(rays1.shape) 
+        # print(rays1.shape)
         ray_dir1=ray_dir.unsqueeze(1).expand(u.shape[0],nc,3)
         coarse_points=coarse_points.unsqueeze(2).expand(u.shape[0],nc,3)
         # print("o:",rays1.shape)
@@ -132,13 +132,13 @@ def render_pixel_rays(u,v,camera,imap_model,tracking_model,nc,nf,track=False):
         # print(model_op.shape)
         coarse_model_op=coarse_model_op.reshape(u.shape[0],nc,4)
         delta=cp1[0,1]-cp1[0,0]
-        
+
         # print(coarse_model_op[:,:,3].shape)
         o=1-torch.exp(-coarse_model_op[:,:,3]*delta)
         # print(o.shape)
         o=o[:,1:]
         # print(o.shape)
-        t=1-torch.exp(-torch.cumsum(coarse_model_op[:,:,3]*delta,1))[:,:-1]#sub value of o in equation; and (j=1 to i-1) so remove last one. 
+        t=1-torch.exp(-torch.cumsum(coarse_model_op[:,:,3]*delta,1))[:,:-1]#sub value of o in equation; and (j=1 to i-1) so remove last one.
         """try this also: t=torch.exp(-torch.cumsum(model_op[:,:,3]*delta,1))[:,:-1] """
         # print(t.shape)
         w=o*t
@@ -167,27 +167,27 @@ def render_pixel_rays(u,v,camera,imap_model,tracking_model,nc,nf,track=False):
 def render(camera,label,model,tracking_model,idx):
     with torch.no_grad():
         camera.update_transform()
-        height=int(camera.size[0]/2)
-        width=int(camera.size[1]/2)
+        height=int(camera.size[0]/5)
+        width=int(camera.size[1]/5)
         rgb=torch.cuda.FloatTensor(height,width,3).fill_(0)
         depth=torch.cuda.FloatTensor(height,width).fill_(0)
-        vs=2*torch.arange(height).reshape(height,1).expand(height,width).reshape(-1).cuda()
-        us=2*torch.arange(width).reshape(1,width).expand(height,width).reshape(-1).cuda()
+        vs=5*torch.arange(height).reshape(height,1).expand(height,width).reshape(-1).cuda()
+        us=5*torch.arange(width).reshape(1,width).expand(height,width).reshape(-1).cuda()
         # d_f,i_f,dv_f=render_pixel_rays(us,vs,camera,track=False)
 
         d_f,i_f,dv_f=render_pixel_rays(us,vs,camera,model,tracking_model,track=False,nc=32,nf=12)
-        
-        depth=d_f.reshape(-1,w)
-        rgb=i_f.reshape(-1,w,3)
+
+        depth=d_f.reshape(-1,width)
+        rgb=i_f.reshape(-1,width,3)
         rgb_cv=torch.clamp(rgb*255,0,255).detach().cpu().numpy().astype(np.uint8)
         depth_cv=torch.clamp(depth*50000/256,0,255).detach().cpu().numpy().astype(np.uint8)
 
-        rgb_gt=torch.clamp(camera.rgb*255,0,255).detach().cpu().numpy().astype(np.uint8)
-        depth_gt=torch.clamp(camera.depth*50000/256,0,255).detach().cpu().numpy().astype(np.uint8)
+        rgb_gt=torch.clamp(camera.rgb_images*255,0,255).detach().cpu().numpy().astype(np.uint8)
+        depth_gt=torch.clamp(camera.depth_images*50000/256,0,255).detach().cpu().numpy().astype(np.uint8)
         prev_rgb=cv2.hconcat([cv2.resize(rgb_cv, (camera.size[1], camera.size[0])), rgb_gt])
         prev_depth=cv2.cvtColor(cv2.hconcat([cv2.resize(depth_cv, (camera.size[1], camera.size[0])), depth_gt]), cv2.COLOR_GRAY2RGB)
         prev=cv2.vconcat([prev_rgb, prev_depth])
-        cv2.imwrite("render/{}_{:04}.png".format(label,idx),prev)
+        cv2.imwrite("/content/render{}_{:04}.png".format(label,idx),prev)
         print("image saved")
         idx+=1
         print("idx:",idx)

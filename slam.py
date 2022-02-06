@@ -13,25 +13,29 @@ class imap_slam():
         self.tracking_model=imap_model().cuda()
         self.cameras=[]
         self.optimizer=torch.optim.Adam(self.model.parameters(),lr=0.005)
-    
+
     def init_tracking_model(self):
         self.tracking_model.load_state_dict(self.model.state_dict())
-    
+
     def add_camera(self,rgb,depth,px,py,pz,rx,ry,rz,a,b):
         flag_rgb=cv2.IMREAD_COLOR
         rgb_image=cv2.imread(rgb,flag_rgb)
+        #resize to fit GPU
+        # rgb_image=cv2.resize(rgb_image,(32,32),interpolation=cv2.INTER_LINEAR)
         flag_depth=cv2.IMREAD_ANYDEPTH
         depth_image=cv2.imread(depth,flag_depth)
+        #resize to fit gpu
+        # depth_image=cv2.resize(depth_image,(32,32),interpolation=cv2.INTER_LINEAR)
         cam=camera(rgb_image,depth_image,px,py,pz,rx,ry,rz,a,b)
         self.cameras.append(cam)
         # print(len(self.cameras))
-    
+
     def map(self,batch_size=200,active_sampling=True):
         # print(len(cameras))
         if len(self.cameras)<5:
             camera_ids=np.arange(len(self.cameras))
         else:
-            camera_ids=np.random.randint(0,len(self.cameras)-2,5)#maybe because we only window_size=5.see table 4 
+            camera_ids=np.random.randint(0,len(self.cameras)-2,5)#maybe because we only window_size=5.see table 4
             camera_ids[3]=len(self.cameras)-1
             camera_ids[4]=len(self.cameras)-2
         # print("Camera ids:",camera_ids)
@@ -58,17 +62,17 @@ class imap_slam():
                     ri=torch.cuda.IntTensor(64).fill_(0)
                     for i in range(64):
                         ni=int(batch_size*self.cameras[camera_id].Li[i])#200*loss_value over that cell of an (8*8) grid
-                        #the way this is done is not exactly an intersection;multiply 200 * (Li/sum(Li) which gives a n_weight, then sample n_weight 
+                        #the way this is done is not exactly an intersection;multiply 200 * (Li/sum(Li) which gives a n_weight, then sample n_weight
                         #random pixel locations from each patch)
                         if ni<1:
                             ni=1
                         ri[i]=ni#ri contains how many pixels were sampled for each unit in the grid
-                        #sample pixel locations for each grid no of pixels in each grid location is ni or ri[i] 
+                        #sample pixel locations for each grid no of pixels in each grid location is ni or ri[i]
                         ul.append((torch.rand(ni)*(sw-1)).to(torch.int16).cuda() + (i%8)*sw)
                         vl.append((torch.rand(ni)*(sh-1)).to(torch.int16).cuda() + int(i/8)*sh)
                     us=torch.cat(ul)
                     vs=torch.cat(vl)
-                    
+
             else:
                 #take all pixels
                 us=((torch.rand(batch_size)*(width-1))).to(torch.int16).cuda()
@@ -101,7 +105,7 @@ class imap_slam():
                         Li[i]=torch.mean(e[ris[i-1]:ris[i]])
                     d=1.0/torch.sum(Li)
                     self.cameras[camera_id].Li=d*Li
-    
+
     def track(self,camera,batch_size=200):
         tracking_model=self.init_tracking_model()
         for _ in range(20):
