@@ -11,7 +11,8 @@ Pytorch Implementation of iMAP: Implicit Mapping and Positioning in Real-Time.Ba
 
   ### To-DO
 - [x] Add visualizaton of results obtained.
-- [ ] Change architrecture from single MLP to heirarchical feature grids in order to improve local reconstruction details. 
+- [ ] Change architrecture from single MLP to heirarchical feature grids in order to improve local reconstruction details
+- [ ] Change architrecture from single MLP to [progressive representations](https://arxiv.org/pdf/2202.04713.pdf). 
 - [ ] Add viewing direction for mapping to check if modelling specularities improves results.
 - [ ] Adding semantic branch for keyframes.
 
